@@ -596,6 +596,11 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
   footer { padding: 55px 22px 28px; }
   .experience { padding: 70px 22px; }
   .location-info { padding: 55px 22px; }
+  /* Bigger headings on pages 2 (About) and 3 (Menu) for mobile */
+  .about .section-title,
+  .menu-section .section-title {
+    font-size: clamp(80px, 22vw, 120px);
+  }
   .about-visual {
     display: flex;
     justify-content: center;
@@ -611,8 +616,11 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
   .circular-text-wrap {
     width: 230px;
     height: 230px;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    transform: translateY(-50%);
   }
   .circular-text-wrap svg g { transform-origin: 160px 160px; }
   .circular-text-wrap text { font-size: 22px; letter-spacing: 9px; }
