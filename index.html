@@ -12,6 +12,8 @@
 <meta property="og:type" content="restaurant">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -452,30 +454,25 @@ section { padding: 120px 80px; }
 }
 
 /* LOCATION */
-.location-section { display: grid; grid-template-columns: 1fr 1fr; min-height: 500px; }
-.location-map {
-  background: var(--charcoal2); display: flex; align-items: center;
-  justify-content: center; min-height: 500px;
-}
-.map-placeholder { text-align: center; }
-.map-pin { font-size: 46px; margin-bottom: 12px; display: block; color: var(--red); animation: pulse 2s infinite; }
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
+.location-section { display: flex; flex-direction: column; }
 .location-info {
-  background: var(--charcoal); padding: 80px;
-  display: flex; flex-direction: column; justify-content: center;
+  background: var(--black); padding: 70px 80px 60px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
 }
-.location-info .section-title { margin-bottom: 28px; font-size: 56px; }
+.location-info .section-title { margin-bottom: 36px; font-size: 56px; }
 .location-info .section-body { margin-bottom: 38px; }
-.location-detail { display: flex; gap: 15px; align-items: flex-start; margin-bottom: 22px; }
+.location-details-row {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 48px; margin-bottom: 36px;
+}
+.location-detail { display: flex; gap: 13px; align-items: flex-start; text-align: left; }
 .loc-icon { color: var(--red); font-size: 14px; margin-top: 3px; flex-shrink: 0; }
 .loc-text { font-family: var(--fb); font-size: 13px; line-height: 1.7; color: rgba(245,240,235,0.72); }
 .loc-text strong {
   display: block; color: var(--white); font-weight: 600;
   letter-spacing: 2px; font-size: 9px; text-transform: uppercase; margin-bottom: 3px;
 }
+.location-map { background: var(--charcoal2); width: 100%; min-height: 520px; }
+#maplibre-map { width: 100%; height: 520px; }
 
 /* FOOTER */
 footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px solid rgba(168,0,10,0.18); }
@@ -516,9 +513,10 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
 
 @media (min-width: 1100px) { #reviews-col3 { display: flex !important; } }
 @media (max-width: 700px) {
-  .reviews-columns-wrap { flex-direction: column; align-items: center; max-height: 500px; }
-  .reviews-column { flex: 0 0 90vw; }
-  .reviews-column:not(:first-child) { display: none; }
+  .reviews-columns-wrap { flex-direction: row; align-items: flex-start; max-height: 500px; gap: 12px; padding: 0 14px; }
+  .reviews-column { flex: 0 0 calc(50vw - 20px); }
+  .reviews-column:not(:first-child) { display: flex; }
+  #reviews-col3 { display: none !important; }
 }
 
 /* SCROLLING TEXT */
@@ -587,6 +585,7 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
   .experience { grid-template-columns: 1fr; padding: 80px 40px; }
   .location-section { grid-template-columns: 1fr; }
   .location-info { padding: 60px 40px; }
+  .location-details-row { gap: 32px; }
   .footer-top { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 640px) {
@@ -597,7 +596,9 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
   .footer-top { grid-template-columns: 1fr; }
   footer { padding: 55px 22px 28px; }
   .experience { padding: 70px 22px; }
-  .location-info { padding: 55px 22px; }
+  .location-info { padding: 55px 22px 44px; }
+  .location-details-row { flex-direction: column; gap: 22px; align-items: flex-start; }
+  #maplibre-map { height: 360px; }
 
   /* Smaller headings on mobile for all pages */
   .hero-title {
@@ -608,7 +609,7 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
   }
   .about .section-title,
   .menu-section .section-title {
-    font-size: clamp(38px, 11vw, 58px) !important;
+    font-size: clamp(44px, 13vw, 64px) !important;
   }
 
   /* Left-align 2nd page (About) text on mobile — shift to left edge */
@@ -1040,29 +1041,32 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
 </section>
 
 <!-- LOCATION -->
-<div id="location" style="display:grid;grid-template-columns:1fr 1fr;min-height:500px;">
-  <div class="location-map" style="padding:0;overflow:hidden;">
-    <iframe
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3578.0!2d50.1798352!3d26.3281094!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3f49e7e96cbb9629%3A0xfaaf4270bc75e178!2sThermo%20Steakhouse!5e0!3m2!1sen!2ssa!4v1"
-      width="100%" height="100%" style="border:0;min-height:500px;display:block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-    </iframe>
-  </div>
+<div id="location">
+  <!-- Gradient blend from verdict dark-red into black -->
+  <div style="height:80px;background:linear-gradient(to bottom,#0a0a0a,var(--black));margin-top:-2px;pointer-events:none;"></div>
+  <!-- Info block: full width, centered, above the map -->
   <div class="location-info reveal">
     <p class="section-label">Find Us</p>
-    <h2 class="section-title" style="font-size:56px;margin-bottom:28px;">Al Khobar,<br>KSA</h2>
-    <div class="location-detail">
-      <span class="loc-icon">◆</span>
-      <div class="loc-text"><strong>Address</strong>8841 King Saud Bin Abdulaziz Rd<br>Al Andalus District, Al Khobar 34437</div>
+    <h2 class="section-title" style="font-size:56px;margin-bottom:36px;">Al Khobar,<br>KSA</h2>
+    <div class="location-details-row">
+      <div class="location-detail">
+        <span class="loc-icon">◆</span>
+        <div class="loc-text"><strong>Address</strong>8841 King Saud Bin Abdulaziz Rd<br>Al Andalus District, Al Khobar 34437</div>
+      </div>
+      <div class="location-detail">
+        <span class="loc-icon">◆</span>
+        <div class="loc-text"><strong>Opening Hours</strong>Mon – Wed, Sat – Sun: 11:00 AM – 12:00 AM<br>Thu – Fri: 11:00 AM – 1:00 AM</div>
+      </div>
+      <div class="location-detail">
+        <span class="loc-icon">◆</span>
+        <div class="loc-text"><strong>Contact</strong>+966 55 050 2275<br>info@thermosteakhouse.com</div>
+      </div>
     </div>
-    <div class="location-detail">
-      <span class="loc-icon">◆</span>
-      <div class="loc-text"><strong>Opening Hours</strong>Mon – Wed, Sat – Sun: 11:00 AM – 12:00 AM<br>Thu – Fri: 11:00 AM – 1:00 AM</div>
-    </div>
-    <div class="location-detail">
-      <span class="loc-icon">◆</span>
-      <div class="loc-text"><strong>Contact</strong>+966 55 050 2275<br>info@thermosteakhouse.com</div>
-    </div>
-    <a href="https://maps.app.goo.gl/thermosteakhouse" target="_blank" class="btn-primary" style="margin-top:28px;display:inline-block;">Get Directions</a>
+    <a href="https://maps.app.goo.gl/thermosteakhouse" target="_blank" class="btn-primary">Get Directions</a>
+  </div>
+  <!-- MapLibre map: full width below -->
+  <div class="location-map">
+    <div id="maplibre-map"></div>
   </div>
 </div>
 
@@ -1180,5 +1184,48 @@ footer { background: var(--black); padding: 70px 80px 40px; border-top: 1px soli
   update();
 })();
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const map = new maplibregl.Map({
+    container: 'maplibre-map',
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    center: [50.1798352, 26.3281094],
+    zoom: 15,
+    attributionControl: { compact: true }
+  });
+
+  map.on('load', function() {
+    const el = document.createElement('div');
+    el.style.cssText = `
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #A8000A; border: 3px solid #f5f0eb;
+      box-shadow: 0 0 0 0 rgba(168,0,10,0.6);
+      animation: mapPulse 2s infinite;
+    `;
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes mapPulse {
+        0%   { box-shadow: 0 0 0 0 rgba(168,0,10,0.6); }
+        70%  { box-shadow: 0 0 0 14px rgba(168,0,10,0); }
+        100% { box-shadow: 0 0 0 0 rgba(168,0,10,0); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    new maplibregl.Marker({ element: el })
+      .setLngLat([50.1798352, 26.3281094])
+      .setPopup(
+        new maplibregl.Popup({ offset: 20, closeButton: false })
+          .setHTML('<div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:#0a0a0a;padding:4px 2px;">THERMO STEAKHOUSE</div>')
+      )
+      .addTo(map);
+  });
+
+  map.scrollZoom.disable();
+  map.on('click', () => map.scrollZoom.enable());
+  map.on('mouseleave', () => map.scrollZoom.disable());
+});
+</script>
+
 </body>
 </html>
