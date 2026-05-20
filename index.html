@@ -662,7 +662,7 @@ footer::before {
 .scroll-text-track {
   display: flex;
   white-space: nowrap;
-  animation: scrollText 40s linear infinite;
+  animation: scrollText 38s linear infinite;
   width: max-content;
 }
 .scroll-text-track span {
@@ -963,10 +963,7 @@ footer::before {
     </div>
   </div>
   <div class="hero-bottom-fade"></div>
-  <div class="hero-scroll" aria-hidden="true">
-    <span>Scroll</span>
-    <div class="hero-scroll-line"></div>
-  </div>
+
 </section>
 
 
@@ -1498,26 +1495,7 @@ footer::before {
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
 
-<script>
-(function() {
-  const tracks = document.querySelectorAll('.scroll-text-track');
-  let lastScrollY = window.scrollY;
-  let currentSpeed = 40;
-  let targetSpeed = 40;
-  window.addEventListener('scroll', () => {
-    const delta = Math.abs(window.scrollY - lastScrollY);
-    targetSpeed = Math.max(20, 40 - delta * 0.15);
-    lastScrollY = window.scrollY;
-  });
-  function update() {
-    currentSpeed += (targetSpeed - currentSpeed) * 0.01;
-    targetSpeed += (40 - targetSpeed) * 0.008;
-    tracks.forEach(t => t.style.animationDuration = currentSpeed + 's');
-    requestAnimationFrame(update);
-  }
-  update();
-})();
-</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const map = new maplibregl.Map({
